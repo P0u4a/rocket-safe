@@ -1,10 +1,17 @@
 use clang::*;
+use rocket_safe::detectors::detect_complex_control_flow::detect_complex_control_flow;
+use rocket_safe::detectors::detect_globals::detect_globals;
 use rocket_safe::detectors::detect_heap::detect_heap;
 use rocket_safe::detectors::detect_recursion::detect_recursion;
 fn main() {
     let targets = vec![
-        "/home/pouya/rocket-safe/tests/code_samples/heap.c",
-        "/home/pouya/rocket-safe/tests/code_samples/recursion.c",
+        "../rocket-safe/tests/code_samples/heap.c",
+        "../rocket-safe/tests/code_samples/recursion.c",
+        "../rocket-safe/tests/code_samples/jmp_and_goto.c",
+        "../rocket-safe/tests/code_samples/global.c",
+        "../rocket-safe/tests/code_samples/unbound_loop.c",
+        "../rocket-safe/tests/code_samples/pointers.c",
+        "../rocket-safe/tests/code_samples/check_return.c",
     ];
 
     let clang = Clang::new().expect("Failed to initialize clang");
@@ -14,18 +21,12 @@ fn main() {
         let tu = index.parser(f).parse().expect("Failed to load source file");
         detect_recursion(&tu);
         detect_heap(&tu);
+        detect_complex_control_flow(&tu);
+        detect_globals(&tu);
     });
 }
 
 /*
-IDEA
-
-For jmp and goto
-    Search AST recursively for those symbols
-
-Global
-    Check the lexical parent of each immediate tu children, if any are global it should be obvious
-
 For check return value
     TBD
 
