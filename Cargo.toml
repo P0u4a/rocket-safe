@@ -1,0 +1,7 @@
+[package]
+name = "rocket-safe"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clang="2.0.0"
