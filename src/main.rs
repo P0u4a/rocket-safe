@@ -3,6 +3,7 @@ use rocket_safe::detectors::detect_complex_control_flow::detect_complex_control_
 use rocket_safe::detectors::detect_globals::detect_globals;
 use rocket_safe::detectors::detect_heap::detect_heap;
 use rocket_safe::detectors::detect_recursion::detect_recursion;
+use rocket_safe::detectors::detect_unbound_loops::detect_unbound_loops;
 fn main() {
     let targets = vec![
         "../rocket-safe/tests/code_samples/heap.c",
@@ -23,6 +24,7 @@ fn main() {
         detect_heap(&tu);
         detect_complex_control_flow(&tu);
         detect_globals(&tu);
+        detect_unbound_loops(&tu);
     });
 }
 
