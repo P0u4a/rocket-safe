@@ -8,6 +8,7 @@ pub fn detect_no_return_check(tu: &TranslationUnit) {
         EntityKind::IfStmt,
         EntityKind::WhileStmt,
         EntityKind::CStyleCastExpr,
+        EntityKind::BinaryOperator,
     ];
 
     let _ = tu.get_entity().visit_children(|child, parent| {
