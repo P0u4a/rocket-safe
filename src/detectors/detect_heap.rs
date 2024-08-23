@@ -1,7 +1,7 @@
 use clang::*;
 use source::Location;
 
-pub fn detect_heap(tu: &TranslationUnit) {
+pub fn detect_heap(tu: &TranslationUnit) -> Vec<String> {
     let mut heap_uses: Vec<(Location, String)> = vec![];
 
     let _ = tu.get_entity().visit_children(|child, _parent| {
@@ -17,27 +17,31 @@ pub fn detect_heap(tu: &TranslationUnit) {
         EntityVisitResult::Recurse
     });
 
+    let mut warnings: Vec<String> = vec![];
+
     for (use_loc, name) in heap_uses {
         let Location {
             line, column, file, ..
         } = use_loc;
 
         match name.as_str() {
-            "malloc" => println!(
+            "malloc" => warnings.push(format!(
                 "Dynamic memory allocation at line {} column {} in {:?}",
                 line,
                 column,
                 file.unwrap().get_path().file_name().unwrap()
-            ),
+            )),
 
-            "free" => println!(
+            "free" => warnings.push(format!(
                 "Dynamic memory release at line {} column {} in {:?}",
                 line,
                 column,
                 file.unwrap().get_path().file_name().unwrap()
-            ),
+            )),
 
-            _ => return,
+            _ => continue,
         }
     }
+
+    return warnings;
 }

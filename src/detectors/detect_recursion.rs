@@ -2,8 +2,9 @@ use crate::collectors::collect_functions::collect_functions;
 use clang::*;
 use source::Location;
 
-pub fn detect_recursion(tu: &TranslationUnit) {
+pub fn detect_recursion(tu: &TranslationUnit) -> Vec<String> {
     let functions = collect_functions(tu);
+    let mut warnings: Vec<String> = vec![];
 
     for function in functions {
         let func_name = function.get_name().unwrap();
@@ -17,18 +18,19 @@ pub fn detect_recursion(tu: &TranslationUnit) {
             }
             EntityVisitResult::Recurse
         });
-
         if res {
             let Location {
                 line, column, file, ..
             } = recursive_call_loc.unwrap().get_spelling_location();
-            println!(
+            warnings.push(format!(
                 "Function {} called recursively at line {} column {} in {:?}",
                 func_name,
                 line,
                 column,
                 file.unwrap().get_path().file_name().unwrap(),
-            );
+            ));
         }
     }
+
+    return warnings;
 }

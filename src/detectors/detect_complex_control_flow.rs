@@ -1,7 +1,7 @@
 use clang::*;
 use source::Location;
 
-pub fn detect_complex_control_flow(tu: &TranslationUnit) {
+pub fn detect_complex_control_flow(tu: &TranslationUnit) -> Vec<String> {
     let mut jmps_and_gotos: Vec<(Location, String)> = vec![];
     let banned_keywords = vec![
         String::from("goto"),
@@ -27,34 +27,38 @@ pub fn detect_complex_control_flow(tu: &TranslationUnit) {
         EntityVisitResult::Recurse
     });
 
+    let mut warnings: Vec<String> = vec![];
+
     for (use_loc, name) in jmps_and_gotos {
         let Location {
             line, column, file, ..
         } = use_loc;
 
         match name.as_str() {
-            "goto" => println!(
+            "goto" => warnings.push(format!(
                 "goto usage at line {} column {} in {:?}",
                 line,
                 column,
                 file.unwrap().get_path().file_name().unwrap()
-            ),
+            )),
 
-            "_setjmp" => println!(
+            "_setjmp" => warnings.push(format!(
                 "setjmp usage at line {} column {} in {:?}",
                 line,
                 column,
                 file.unwrap().get_path().file_name().unwrap(),
-            ),
+            )),
 
-            "longjmp" => println!(
+            "longjmp" => warnings.push(format!(
                 "longjmp usage at line {} column {} in {:?}",
                 line,
                 column,
                 file.unwrap().get_path().file_name().unwrap()
-            ),
+            )),
 
-            _ => return,
+            _ => continue,
         }
     }
+
+    return warnings;
 }

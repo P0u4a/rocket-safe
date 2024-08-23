@@ -23,11 +23,20 @@ fn main() {
         .parse()
         .expect("Failed to load source file");
 
-    detect_recursion(&tu);
-    detect_heap(&tu);
-    detect_complex_control_flow(&tu);
-    detect_globals(&tu);
-    detect_unbound_loops(&tu);
-    detect_no_return_check(&tu);
-    detect_pointer_deref(&tu);
+    let all_warnings: Vec<String> = vec![
+        detect_recursion(&tu),
+        detect_heap(&tu),
+        detect_complex_control_flow(&tu),
+        detect_globals(&tu),
+        detect_unbound_loops(&tu),
+        detect_no_return_check(&tu),
+        detect_pointer_deref(&tu),
+    ]
+    .into_iter()
+    .flat_map(|v| v)
+    .collect();
+
+    all_warnings.into_iter().for_each(|w| {
+        println!("{}", w);
+    });
 }
