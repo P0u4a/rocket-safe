@@ -13,7 +13,7 @@ pub fn detect_pointer_deref(tu: &TranslationUnit) -> Vec<String> {
                 Ok(location) => {
                     warnings.push(format!(
                         "Double pointer dereference detected at line {} column {} in {:?}",
-                        location.line, location.column, location.column
+                        location.line, location.column, location.filename
                     ));
                 }
                 Err(err) => {
