@@ -1,6 +1,7 @@
 use crate::collectors::collect_functions::collect_functions;
 use clang::*;
-use source::Location;
+
+use super::helpers::get_violation_loc;
 
 pub fn detect_recursion(tu: &TranslationUnit) -> Vec<String> {
     let functions = collect_functions(tu);
@@ -19,16 +20,17 @@ pub fn detect_recursion(tu: &TranslationUnit) -> Vec<String> {
             EntityVisitResult::Recurse
         });
         if res {
-            let Location {
-                line, column, file, ..
-            } = recursive_call_loc.unwrap().get_spelling_location();
-            warnings.push(format!(
-                "Function {} called recursively at line {} column {} in {:?}",
-                func_name,
-                line,
-                column,
-                file.unwrap().get_path().file_name().unwrap(),
-            ));
+            match get_violation_loc(&recursive_call_loc) {
+                Ok(location) => {
+                    warnings.push(format!(
+                        "Function {} called recursively at line {} column {} in {:?}",
+                        func_name, location.line, location.column, location.filename
+                    ));
+                }
+                Err(err) => {
+                    warnings.push(format!("Recursive function at unknown location. {}", err));
+                }
+            };
         }
     }
 

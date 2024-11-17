@@ -1,9 +1,8 @@
 use clang::*;
 
+use super::helpers::{get_violation_loc, ViolationLocation};
 use crate::collectors::collect_loops::collect_loops;
-use source::Location;
 
-// TODO make a helper function to get the line, column, and file name of a violation
 pub fn detect_unbound_loops(tu: &TranslationUnit) -> Vec<String> {
     let loops = collect_loops(tu);
     let mut warnings: Vec<String> = vec![];
@@ -12,28 +11,42 @@ pub fn detect_unbound_loops(tu: &TranslationUnit) -> Vec<String> {
         match _loop.get_kind() {
             EntityKind::WhileStmt => {
                 if !is_bound(_loop) {
-                    let Location {
-                        line, column, file, ..
-                    } = _loop.get_location().unwrap().get_spelling_location();
-                    warnings.push(format!(
-                        "While loop at line {} column {} is unbounded in {:?}",
+                    let ViolationLocation {
                         line,
                         column,
-                        file.unwrap().get_path().file_name().unwrap()
+                        filename,
+                    } = match get_violation_loc(&_loop.get_location()) {
+                        Ok(location) => location,
+                        Err(err) => {
+                            warnings
+                                .push(format!("Unbounded while loop at unknown location. {}", err));
+                            continue;
+                        }
+                    };
+                    warnings.push(format!(
+                        "While loop at line {} column {} is unbounded in {:?}",
+                        line, column, filename
                     ));
                 }
             }
 
             EntityKind::ForStmt => {
                 if !is_bound(_loop) {
-                    let Location {
-                        line, column, file, ..
-                    } = _loop.get_location().unwrap().get_spelling_location();
-                    warnings.push(format!(
-                        "For loop at line {} column {} is unbounded in {:?}",
+                    let ViolationLocation {
                         line,
                         column,
-                        file.unwrap().get_path().file_name().unwrap()
+                        filename,
+                    } = match get_violation_loc(&_loop.get_location()) {
+                        Ok(location) => location,
+                        Err(err) => {
+                            warnings
+                                .push(format!("Unbounded for loop at unknown location. {}", err));
+                            continue;
+                        }
+                    };
+                    warnings.push(format!(
+                        "For loop at line {} column {} is unbounded in {:?}",
+                        line, column, filename
                     ));
                 }
             }
